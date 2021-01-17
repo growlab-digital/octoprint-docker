@@ -2,11 +2,17 @@ version: "3"
 
 services:
   octprint-alpine:
-    build: .
+    build:
+      context: .
+      args:
+        octoprint_ref: 1.5.2
+    environment:
+      LD_LIBRARY_PATH: /opt/vc/lib
     ports:
       - "5000:5000"
     volumes: 
       - "octoprint:/home/octoprint"
+      - "/opt/vc:/opt/vc:ro"
 
 volumes:
   octoprint:

@@ -1,7 +1,7 @@
 builddir=.build
 cachedir=.cache
 octoprint_ref?= $(shell ./scripts/version.sh "OctoPrint/OctoPrint")
-platforms?="linux/arm/v7,linux/arm64/v8,linux/amd64,linux/i386"
+platforms?="linux/arm/v7,linux/arm64/v8,linux/amd64"
 
 # .PHONY: test
 
@@ -18,8 +18,8 @@ platforms?="linux/arm/v7,linux/arm64/v8,linux/amd64,linux/i386"
 # 	docker-compose -f test/docker-compose.yml down --rmi local -v
 # 	rm -rf ${builddir}
 
-# setup-multi-arch:
-# 	docker run --privileged --rm tonistiigi/binfmt --install arm64,arm/v7,amd64
+setup-multi-arch:
+	docker run --privileged --rm tonistiigi/binfmt --install arm64,arm/v7,amd64
 
 # test:
 # 	./scripts/buildx_check.sh
@@ -51,7 +51,18 @@ platforms?="linux/arm/v7,linux/arm64/v8,linux/amd64,linux/i386"
 # clean-minimal:	
 # 	docker rm octoprint_minimal
 
-build-alpine:
+.PHONY: alpine
+
+build:
+	docker-compose -f alpine/docker-compose.yml build
+
+up:
+	docker-compose -f alpine/docker-compose.yml up
+
+down:
+	docker-compose -f alpine/docker-compose.yml down
+
+buildx-alpine:
 	# ./scripts/buildx_check.sh
 	@echo '[buildx]: building octoprint-alpine/Dockerfile for all supported architectures and caching locally'
 	mkdir -p ${cachedir} ${builddir}
@@ -59,7 +70,8 @@ build-alpine:
 	--platform ${platforms} \
 	--cache-from type=local,src=${cachedir} \
 	--output type=local,dest=${builddir} \
-	--progress tty -t growlab/octoprint:alpine ./alpine
+	--build-arg octoprint_ref=${octoprint_ref} \
+	--progress tty -t growlab/octoprint-alpine ./alpine
 
 test-alpine:
 	docker run -it --name octoprint_alpine -p 55000:5000 octoprint/octoprint:alpine
