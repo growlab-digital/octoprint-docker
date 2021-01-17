@@ -1,0 +1,9 @@
+main:
+  - 'Dockerfile'
+  - 'root/**'
+minimal:
+  - 'minimal/**'
+readme:
+  - 'README.md'
+alpine:
+  - 'alpine/**'

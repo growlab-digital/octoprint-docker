@@ -1,0 +1,37 @@
+version: "3"
+
+services:
+  haproxy:
+    build: haproxy/
+    ports:
+      - "81:80"
+    volumes:
+      - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
+    depends_on:
+      - octoprint-alpine
+      - mjpg-streamer
+    restart: always
+  octoprint-alpine:
+    build: alpine/
+    restart: on-failure
+    ports:
+      - 5001:5000
+    volumes:
+      - octoprint:/home/octoprint
+      - ./alpine/supervisord.conf:/etc/supervisord.conf
+    # devices:
+    #  - /dev/ttyUSB0:/dev/ttyUSB0
+    #  - /dev/video0:/dev/video0
+  mjpg-streamer:
+    build: mjpg-streamer/
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./mjpg-streamer/supervisord.conf:/etc/supervisord.conf
+    depends_on:
+      - octoprint-alpine
+    restart: unless-stopped
+    env_file: .env
+
+volumes:
+  octoprint:

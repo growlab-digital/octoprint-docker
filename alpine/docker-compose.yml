@@ -1,0 +1,12 @@
+version: "3"
+
+services:
+  octprint-alpine:
+    build: .
+    ports:
+      - "5000:5000"
+    volumes: 
+      - "octoprint:/home/octoprint"
+
+volumes:
+  octoprint:
