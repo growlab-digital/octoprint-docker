@@ -1,7 +1,9 @@
 FROM python:3.8-alpine AS compiler
 
 ARG octoprint_ref
+ARG platforms
 ENV octoprint_ref ${octoprint_ref}
+ENV platforms ${platforms}
 
 RUN apk add --no-cache --upgrade --virtual .build-deps \
     gcc \
@@ -10,10 +12,10 @@ RUN apk add --no-cache --upgrade --virtual .build-deps \
     libffi-dev \
     make 
 
-RUN if $platforms == arm64 ; then \
+RUN if [ "$platforms" != "amd64" ] ; then \
     apk add --no-cache --upgrade --virtual .rpidev-deps \
     raspberrypi-dev \
-    wiringpi-dev \
+    # wiringpi-dev \
     # py3-rpigpio \
     libgpiod-dev \
     py3-libgpiod \
@@ -25,15 +27,18 @@ WORKDIR /home/octoprint
 
 RUN pip install --user --no-cache-dir pip \
     setuptools \
-    wheel
+    wheel && \
+    if [ "${platforms}" != "amd64" ]; then \
+    pip install --no-cache-dir --user --upgrade RPi.GPIO; else continue; fi
+
 ENV PATH /home/octoprint/.local/bin:$PATH
-RUN python3 -m venv venv
-RUN source venv/bin/activate
+#RUN python3 -m venv venv
+#RUN source venv/bin/activate
 RUN pip install --user --no-cache-dir octoprint==${octoprint_ref}
 
 USER root
 RUN apk del .build-deps && \
-    if [ "$platforms" == "arm64" ]; then apk del .rpidev-deps; else continue; fi
+    if [ "$platforms" != "amd64" ]; then apk del .rpidev-deps; else continue; fi
 
 FROM python:3.8-alpine AS runtime
 
@@ -42,10 +47,10 @@ RUN adduser -D octoprint && \
     tini \
     supervisor
 
-RUN if [ "$platforms" == "arm64"] ; then \
+RUN if [ "$platforms" != "amd64" ]; then \
     apk add --no-cache --virtual .rpi-deps \
-    # py3-rpigpio \
-    wiringpi \
+    # py3-rpigpio -> pip install RPi.GPIO \
+    # DEPECRATED wiringpi \
     raspberrypi; else continue; fi && \
     addgroup octoprint tty && \
     addgroup octoprint video && \
@@ -62,5 +67,6 @@ RUN pip install --user supervisor --upgrade --no-cache-dir
 
 EXPOSE 5000
 
-ENTRYPOINT [ "/sbin/tini", "--", "/usr/bin/supervisord", "-c", "/etc/supervisord.conf" ]
+ENTRYPOINT [ "/sbin/tini", "--" ]
 
+CMD [ "/usr/bin/supervisord", "-c", "/etc/supervisord.conf" ]

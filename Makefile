@@ -1,7 +1,7 @@
 builddir=.build
 cachedir=.cache
 octoprint_ref?= $(shell ./scripts/version.sh "OctoPrint/OctoPrint")
-platforms?="linux/arm/v7,linux/arm64/v8,linux/amd64"
+platforms?="linux/arm/v7,linux/arm64,linux/amd64"
 
 # .PHONY: test
 
