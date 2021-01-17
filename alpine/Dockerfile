@@ -1,9 +1,7 @@
 FROM python:3.8-alpine AS compiler
 
 ARG octoprint_ref
-ARG platforms
 ENV octoprint_ref ${octoprint_ref}
-ENV platforms ${platforms}
 
 RUN apk add --no-cache --upgrade --virtual .build-deps \
     gcc \
@@ -12,49 +10,68 @@ RUN apk add --no-cache --upgrade --virtual .build-deps \
     libffi-dev \
     make 
 
-RUN if [ "$platforms" != "amd64" ] ; then \
+RUN /bin/ash -c 'set -ex && \
+    ARCH=`uname -m` && \
+    if [ "$ARCH" != "x86_64" || "x86"]; then \
+    echo "ARM architecture detected, installing extra libraries." && \
     apk add --no-cache --upgrade --virtual .rpidev-deps \
     raspberrypi-dev \
-    # wiringpi-dev \
-    # py3-rpigpio \
     libgpiod-dev \
     py3-libgpiod \
-    linux-tools-gpio; else continue; fi
+    linux-tools-gpio; else \
+    echo "Not an ARM architecture, continuing." && \
+    continue; \
+    fi'
 
 RUN adduser -D octoprint
 USER octoprint
 WORKDIR /home/octoprint
-
-RUN pip install --user --no-cache-dir pip \
-    setuptools \
-    wheel && \
-    if [ "${platforms}" != "amd64" ]; then \
-    pip install --no-cache-dir --user --upgrade RPi.GPIO; else continue; fi
-
 ENV PATH /home/octoprint/.local/bin:$PATH
-#RUN python3 -m venv venv
-#RUN source venv/bin/activate
+
+#RUN pip install --user --no-cache-dir pip \
+#    setuptools \
+#    wheel
+
+# RUN /bin/ash -c 'set -ex && \
+#     ARCH=`uname -m` && \
+#     if [ "$ARCH" != "x86_64" ]; then \
+#     echo "ARM architecture detected, installing extra libraries." && \
+#     pip install --no-cache-dir --user --upgrade RPi.GPIO; else \
+#     echo "Not an ARM architecture, continuing." && \
+#     continue; \
+#     fi'
+
+RUN python3 -m venv venv
+RUN source venv/bin/activate
 RUN pip install --user --no-cache-dir octoprint==${octoprint_ref}
 
 USER root
-RUN apk del .build-deps && \
-    if [ "$platforms" != "amd64" ]; then apk del .rpidev-deps; else continue; fi
+RUN apk del .build-deps
+RUN /bin/ash -c 'set -ex && \
+    ARCH=`uname -m` && \
+    if [ "$ARCH" != "x86_64" ]; then \
+    echo "ARM architecture detected, deleting unused dev dependencies." && \
+    apk del .rpidev-deps; else \
+    echo "Not an ARM architecture, skipping." && \
+    continue; \
+    fi'
 
 FROM python:3.8-alpine AS runtime
 
 RUN adduser -D octoprint && \
-    apk add --no-cache --virtual .run-deps \
-    tini \
-    supervisor
-
-RUN if [ "$platforms" != "amd64" ]; then \
-    apk add --no-cache --virtual .rpi-deps \
-    # py3-rpigpio -> pip install RPi.GPIO \
-    # DEPECRATED wiringpi \
-    raspberrypi; else continue; fi && \
     addgroup octoprint tty && \
     addgroup octoprint video && \
-    addgroup octoprint dialout
+    addgroup octoprint dialout && \
+    apk add tini
+
+RUN /bin/ash -c 'set -ex && \
+    ARCH=`uname -m` && \
+    if [ "$ARCH" == "armv7l" ]; then \
+    echo "ARM architecture detected, deleting unused dev dependencies." && \
+    apk add --no-cache raspberrypi ; else \
+    echo "Not an ARM architecture, skipping." && \
+    continue; \
+    fi'
 
 USER octoprint
 WORKDIR /home/octoprint
@@ -69,4 +86,4 @@ EXPOSE 5000
 
 ENTRYPOINT [ "/sbin/tini", "--" ]
 
-CMD [ "/usr/bin/supervisord", "-c", "/etc/supervisord.conf" ]
+CMD [ "supervisord", "-c", "/etc/supervisord.conf" ]
