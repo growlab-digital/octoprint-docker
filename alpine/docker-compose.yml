@@ -6,7 +6,6 @@ services:
       context: .
       args:
         octoprint_ref: 1.5.2
-        platforms: arm32v7
     environment:
       LD_LIBRARY_PATH: /opt/vc/lib
     ports:
@@ -14,6 +13,8 @@ services:
     volumes: 
       - "octoprint:/home/octoprint"
       - "/opt/vc:/opt/vc:ro"
+    devices:
+    - "/dev/vchiq:/dev/vchiq:ro"
 
 volumes:
   octoprint:
