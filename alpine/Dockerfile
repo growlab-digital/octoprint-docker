@@ -16,8 +16,8 @@ WORKDIR /home/octoprint
 ENV PATH /home/octoprint/.local/bin:$PATH
 
 RUN python3 -m venv venv && \
-    source venv/bin/activate && \
-    pip install --user --no-cache-dir octoprint==${octoprint_ref}
+    source venv/bin/activate
+RUN pip install --user --no-cache-dir octoprint==${octoprint_ref}
 
 USER root
 RUN apk del .build-deps

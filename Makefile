@@ -73,6 +73,18 @@ buildx-alpine:
 	--build-arg octoprint_ref=${octoprint_ref} \
 	--progress tty -t growlab/octoprint-alpine ./alpine
 
+
+buildx-dev:
+	# ./scripts/buildx_check.sh
+	@echo '[buildx]: building octoprint-alpine/Dockerfile for all supported architectures and caching locally'
+	mkdir -p ${cachedir} ${builddir}
+	docker buildx build \
+	--platform ${platforms} \
+	--cache-from type=local,src=${cachedir} \
+	--output type=local,dest=${builddir} \
+	--build-arg octoprint_ref=${octoprint_ref} \
+	--progress tty -t growlab/octoprint-alpine ./dev
+
 test-alpine:
 	docker run -it --name octoprint_alpine -p 55000:5000 octoprint/octoprint:alpine
 
