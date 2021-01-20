@@ -4,7 +4,7 @@ services:
   haproxy:
     build: haproxy/
     ports:
-      - "81:80"
+      - "80:80"
     volumes:
       - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
     depends_on:
@@ -15,7 +15,7 @@ services:
     build: alpine/
     restart: on-failure
     ports:
-      - 5001:5000
+      - 5000:5000
     volumes:
       - octoprint:/home/octoprint
       - ./alpine/supervisord.conf:/etc/supervisord.conf
@@ -25,7 +25,7 @@ services:
   mjpg-streamer:
     build: mjpg-streamer/
     ports:
-      - "8081:8080"
+      - "8080:8080"
     volumes:
       - ./mjpg-streamer/supervisord.conf:/etc/supervisord.conf
     depends_on:
