@@ -25,8 +25,7 @@ FROM alpine:3.12 AS mjpg-streamer
 RUN apk add --update --virtual .mjpg-run-deps \
     v4l-utils-libs \
     supervisor \
-    tini \
-    ffmpeg
+    tini 
 
 COPY --chown=root:root --from=mjpg-streamer-build /mjpg-streamer/mjpg-streamer-experimental usr/local/lib/mjpg-streamer
 COPY --chown=root:root ./scripts/run /usr/local/bin/mjpg-streamer

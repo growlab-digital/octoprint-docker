@@ -28,7 +28,7 @@ RUN adduser -D octoprint && \
     addgroup octoprint tty && \
     addgroup octoprint video && \
     addgroup octoprint dialout && \
-    apk add tini --no-cache
+    apk add tini ffmpeg --no-cache
 
 RUN /bin/ash -c 'set -e && \
     ARCH=`uname -m` && \

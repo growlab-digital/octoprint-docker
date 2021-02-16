@@ -2,18 +2,25 @@ version: "3"
 
 services:
   haproxy:
-    build: haproxy/
+    image: haproxy:lts-alpine
+    networks: 
+      - octoprint
     ports:
       - "80:80"
     volumes:
       - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
     depends_on:
-      - octoprint-alpine
+      - octoprint
       - mjpg-streamer
     restart: always
-  octoprint-alpine:
-    build: alpine/
+  octoprint:
+    build: 
+      context: alpine/
+      args:
+        - octoprint_ref=1.5.3
     restart: on-failure
+    networks: 
+      - octoprint
     ports:
       - 5000:5000
     volumes:
@@ -21,17 +28,25 @@ services:
       - ./alpine/supervisord.conf:/etc/supervisord.conf
     # devices:
     #  - /dev/ttyUSB0:/dev/ttyUSB0
-    #  - /dev/video0:/dev/video0
   mjpg-streamer:
     build: mjpg-streamer/
+    networks: 
+      - octoprint
     ports:
       - "8080:8080"
     volumes:
       - ./mjpg-streamer/supervisord.conf:/etc/supervisord.conf
+    devices:
+     - /dev/video0:/dev/video0
     depends_on:
-      - octoprint-alpine
+      - octoprint
     restart: unless-stopped
     env_file: .env
 
 volumes:
   octoprint:
+
+networks:
+  octoprint:
+    driver: overlay
+    attachable: true
