@@ -1,0 +1,22 @@
+---
+providers:
+  docker:
+    # endpoint: "tcp://127.0.0.1:2377"
+    # swarmMode: true
+    exposedbydefault: false
+    watch: true
+
+entryPoints:
+  web:
+    address: ":80"
+  websecure:
+    address: ":443"
+
+api:
+  dashboard: true
+  insecure: true
+
+accessLog:
+  fields:
+    names:
+      StartUTC: drop

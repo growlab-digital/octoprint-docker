@@ -24,19 +24,17 @@ FROM alpine:3.12 AS mjpg-streamer
 
 RUN apk add --update --virtual .mjpg-run-deps \
     v4l-utils-libs \
-    supervisor \
     tini 
 
-COPY --chown=root:root --from=mjpg-streamer-build /mjpg-streamer/mjpg-streamer-experimental usr/local/lib/mjpg-streamer
-COPY --chown=root:root ./scripts/run /usr/local/bin/mjpg-streamer
-COPY ./supervisord.conf /etc/supervisord.conf
+COPY --chown=root:root --from=mjpg-streamer-build /mjpg-streamer/mjpg-streamer-experimental /usr/local/lib/mjpg-streamer
 
 ENV CAMERA_DEV /dev/video0
-ENV MJPEG_STREAMER_AUTOSTART true
 ENV MJPG_STREAMER_INPUT -n -r 640x480
 
 EXPOSE 8080
-
+WORKDIR /usr/local/lib/mjpg-streamer
 ENTRYPOINT [ "/sbin/tini", "--" ]
-
-CMD [ "/usr/bin/supervisord", "-c", "/etc/supervisord.conf" ]
+CMD export LD_LIBRARY_PATH=. && \
+    ./mjpg_streamer \
+    -i "/usr/local/lib/mjpg-streamer/input_uvc.so $MJPG_STREAMER_INPUT -d $CAMERA_DEV" \
+    -o "/usr/local/lib/mjpg-streamer/output_http.so -w /usr/local/lib/mjpg-streamer/www/ -p 8080"

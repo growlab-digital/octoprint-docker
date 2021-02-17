@@ -1,52 +1,47 @@
-version: "3"
-
+---
+version: "3.7"
 services:
-  haproxy:
-    image: haproxy:lts-alpine
-    networks: 
-      - octoprint
-    ports:
-      - "80:80"
-    volumes:
-      - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
-    depends_on:
-      - octoprint
-      - mjpg-streamer
-    restart: always
   octoprint:
     build: 
       context: alpine/
       args:
         - octoprint_ref=1.5.3
-    restart: on-failure
+    restart: always
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.octoprint.rule=Host(`print.3d`)"
+      - "traefik.http.routers.octoprint.entryPoints=web"
+      - "traefik.http.services.octoprint.loadBalancer.server.port=5000"
+      - "traefik.http.services.octoprint.loadBalancer.sticky.cookie"
+      - "traefik.docker.network=traefik_proxy"
     networks: 
-      - octoprint
-    ports:
-      - 5000:5000
+      - traefik_proxy
     volumes:
       - octoprint:/home/octoprint
       - ./alpine/supervisord.conf:/etc/supervisord.conf
     # devices:
     #  - /dev/ttyUSB0:/dev/ttyUSB0
   mjpg-streamer:
-    build: mjpg-streamer/
+    build: 
+      context: mjpg-streamer/
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.mjpg.rule=Host(`cam.print.3d`)"
+      - "traefik.http.routers.mjpg.entryPoints=web"
+      - "traefik.http.services.mjpg.loadBalancer.server.port=8080"
+      - "traefik.docker.network=traefik_proxy"
     networks: 
-      - octoprint
-    ports:
-      - "8080:8080"
-    volumes:
-      - ./mjpg-streamer/supervisord.conf:/etc/supervisord.conf
+      - traefik_proxy
     devices:
      - /dev/video0:/dev/video0
-    depends_on:
-      - octoprint
     restart: unless-stopped
-    env_file: .env
+    environment:
+      - CAMERA_DEV=/dev/video0
+      - MJPG_STREAMER_INPUT=-n -r 1280x720 -f 30 -q 100
 
 volumes:
   octoprint:
 
 networks:
-  octoprint:
-    driver: overlay
-    attachable: true
+  traefik_proxy:
+    external: true
