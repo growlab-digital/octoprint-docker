@@ -2,7 +2,7 @@
 version: "3.7"
 services:
   octoprint:
-    build: 
+    build:
       context: alpine/
       args:
         - octoprint_ref=1.5.3
@@ -14,7 +14,7 @@ services:
       - "traefik.http.services.octoprint.loadBalancer.server.port=5000"
       - "traefik.http.services.octoprint.loadBalancer.sticky.cookie"
       - "traefik.docker.network=traefik_proxy"
-    networks: 
+    networks:
       - traefik_proxy
     volumes:
       - octoprint:/home/octoprint
@@ -22,7 +22,7 @@ services:
     # devices:
     #  - /dev/ttyUSB0:/dev/ttyUSB0
   mjpg-streamer:
-    build: 
+    build:
       context: mjpg-streamer/
     labels:
       - "traefik.enable=true"
@@ -30,10 +30,10 @@ services:
       - "traefik.http.routers.mjpg.entryPoints=web"
       - "traefik.http.services.mjpg.loadBalancer.server.port=8080"
       - "traefik.docker.network=traefik_proxy"
-    networks: 
+    networks:
       - traefik_proxy
     devices:
-     - /dev/video0:/dev/video0
+      - /dev/video0:/dev/video0
     restart: unless-stopped
     environment:
       - CAMERA_DEV=/dev/video0
