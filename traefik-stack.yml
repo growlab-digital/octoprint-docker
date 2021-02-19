@@ -1,14 +1,28 @@
 ---
 version: "3.7"
 services:
+  socket:
+    image: tecnativa/docker-socket-proxy
+    networks:
+      - private
+    ports:
+      - "2375"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    environment:
+      CONTAINERS: 1
+      NETWORKS: 1
+      SERVICES: 1
+      SWARM: 1
+      TASKS: 1
+      NODES: 1
+    deploy:
+      mode: global
+      placement:
+        constraints: [node.role == manager]
+
   traefik:
     image: traefik:v2.4
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.traefik.rule=Host(`traefik.print.3d`)"
-      - "traefik.http.routers.traefik.entryPoints=web"
-      - "traefik.http.services.traefik.loadBalancer.server.port=8080"
-      - "traefik.http.routers.traefik.service=api@internal"
     ports:
       - published: 80
         target: 80
@@ -18,17 +32,41 @@ services:
         target: 443
         protocol: tcp
         mode: host
+      - target: 8080
+        published: 8080
+        protocol: tcp
+        mode: ingress
     networks:
-      - proxy
+      - public
+      - private
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./traefik/:/etc/traefik:ro
+      - ./certs/:/certs:rw
     environment:
-      - TZ=America/Recife
+      TZ: America/Recife
+    healthcheck:
+      test: ["CMD", "traefik", "healthcheck"]
+      timeout: 30s
+      interval: 10s
+      retries: 5
     deploy:
       mode: global
+      placement:
+        constraints: [node.role == manager]
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.traefik.rule=Host(`traefik.print.3d`)"
+        - "traefik.http.routers.traefik.entryPoints=web,websecure"
+        - "traefik.http.routers.traefik.service=api@internal"
+        - "traefik.http.routers.traefik.tls=true"
+        - "traefik.http.services.traefik.loadBalancer.server.port=8080"
 
 networks:
-  proxy:
+  public:
     driver: overlay
     attachable: true
+  private:
+    driver: overlay
+    attachable: true
+    driver_opts:
+      encrypted: "true"

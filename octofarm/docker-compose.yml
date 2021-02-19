@@ -9,11 +9,11 @@ services:
       - "traefik.http.routers.octofarm.entryPoints=web"
       - "traefik.http.services.octofarm.loadBalancer.server.port=4000"
       - "traefik.http.services.octofarm.loadBalancer.sticky.cookie"
-      - "traefik.docker.network=traefik_proxy"
+      - "traefik.docker.network=traefik_public"
     networks:
       - octofarm_private
-      - traefik_proxy
-    environment: 
+      - traefik_public
+    environment:
       MONGO: mongodb://mongodb:27017/octofarm
     depends_on:
       - mongodb
@@ -29,5 +29,5 @@ services:
 networks:
   octofarm_private:
     driver: overlay
-  traefik_proxy:
+  traefik_public:
     external: true

@@ -1,0 +1,41 @@
+---
+version: "3.7"
+services:
+  octofarm:
+    image: octofarm/octofarm:alpine-latest
+    networks:
+      - private
+      - traefik_public
+    environment:
+      MONGO: mongodb://mongodb:27017/octofarm
+    deploy:
+      mode: global
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.octofarm.rule=Host(`farm.print.3d`)"
+        - "traefik.http.routers.octofarm.entrypoints=web,websecure"
+        - "traefik.http.routers.octofarm.tls=true"
+        - "traefik.http.services.octofarm.loadBalancer.server.port=4000"
+        - "traefik.http.services.octofarm.loadBalancer.sticky.cookie"
+        - "traefik.docker.network=traefik_public"
+
+  mongodb:
+    image: mongo
+    networks:
+      - private
+    ports:
+      - "27017"
+    command: mongod --dbpath /data/db
+    volumes:
+      - farmdata:/data/db
+
+networks:
+  private:
+    driver: overlay
+    driver_opts:
+      encrypted: "true"
+  traefik_public:
+    external: true
+
+volumes:
+  farmdata: {}

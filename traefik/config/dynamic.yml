@@ -1,0 +1,39 @@
+---
+tls:
+  stores:
+    default: {}
+  certificates:
+    - certFile: /certs/print.3d.crt
+      keyFile: /certs/print.3d.key
+  options:
+    default:
+      sniStrict: true
+
+http:
+  routers:
+    octoprint:
+      entryPoints:
+        - web
+        - websecure
+      service: octoprint
+      rule: "Host(`print.3d`)"
+      tls: {}
+    mjpg:
+      entryPoints:
+        - web
+        - websecure
+      service: mjpg
+      rule: "Host(`cam.print.3d`)"
+      tls: {}
+
+  services:
+    octoprint:
+      loadBalancer:
+        servers:
+          - url: http://octoprint:5000
+        passHostHeader: true
+    mjpg:
+      loadBalancer:
+        servers:
+          - url: http://mjpg-streamer:8080
+        passHostHeader: true
