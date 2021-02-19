@@ -6,13 +6,14 @@
 
 Generate self-signed certificates with OpenSSL using the script provided:
 `./scripts/cert.sh print.3d`
+
 Then build OctoPrint + mjpg-streamer:
 `make build`
 
 You will be able to deploy the traefik stack and bringing octoprint up:
 
 ```
-make traefik-swarm-up && make up && make farm-up
+make stack-up
 ```
 
 See in action!
@@ -29,11 +30,11 @@ See in action!
 
 ### Webcam & Timelapse:
 
-- Stream URL: http://cam.print.3d/?action=stream
+- Stream URL: `http://cam.print.3d/?action=stream`
 
-- Snapshot URL: http://mjpg-streamer:8080/?action=snapshot
+- Snapshot URL: `http://mjpg-streamer:8080/?action=snapshot`
 
-- Path to FFMPEG: /usr/bin/ffmpeg
+- Path to FFMPEG: `/usr/bin/ffmpeg`
 
 ### Server
 
@@ -42,3 +43,5 @@ See in action!
 - Shutdown system: `supervisorctl signal SIGTERM all`
 
 **Notice that it will only manage the octoprint instance! All others containers won't be affected!**
+
+To properly stop all services, use `make stack-down`
