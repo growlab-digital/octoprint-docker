@@ -5,7 +5,7 @@
 ## Setup & running
 
 Generate self-signed certificates with OpenSSL using the script provided:
-`./scripts/cert.sh print.3d`
+`mkdir certs && cd scripts && ./cert.sh print.3d && cd ..`
 
 Then build OctoPrint + mjpg-streamer:
 `make build`
