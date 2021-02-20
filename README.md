@@ -23,7 +23,7 @@ make stack-up
 
 See in action!
 
-[Traefik Dashboard](https://traefik.print.3d/)
+[Traefik Dashboard](https://traefik.print.3d/) - auth credentials _admin:admin_
 
 [mjpg-streamer](https://cam.print.3d/)
 
@@ -47,6 +47,6 @@ See in action!
 - Restart system: `supervisorctl update all`
 - Shutdown system: `supervisorctl signal SIGTERM all`
 
-**Notice that it will only manage the octoprint instance! All others containers won't be affected!**
+**Notice that it will only manage the octoprint instance! All other containers won't be affected!**
 
 To properly stop all services, use `make stack-down`
