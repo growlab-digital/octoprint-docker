@@ -59,6 +59,7 @@ services:
         - "traefik.http.routers.traefik.entryPoints=web,websecure"
         - "traefik.http.routers.traefik.service=api@internal"
         - "traefik.http.routers.traefik.tls=true"
+        - "traefik.http.routers.traefik.middlewares=admin-auth@file"
         - "traefik.http.services.traefik.loadBalancer.server.port=8080"
 
 networks:

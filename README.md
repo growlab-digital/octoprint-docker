@@ -5,12 +5,17 @@
 ## Setup & running
 
 Generate self-signed certificates with OpenSSL using the script provided:
-`mkdir certs && cd scripts && ./cert.sh print.3d && cd ..`
+
+```
+mkdir certs \
+&& ./scripts/cert.sh print.3d
+
+```
 
 Then build OctoPrint + mjpg-streamer:
 `make build`
 
-You will be able to deploy the traefik stack and bringing octoprint up:
+You are now able to deploy the stack:
 
 ```
 make stack-up
@@ -20,9 +25,9 @@ See in action!
 
 [Traefik Dashboard](https://traefik.print.3d/)
 
-[OctoPrint](https://print.3d/)
-
 [mjpg-streamer](https://cam.print.3d/)
+
+[OctoPrint](https://print.3d/)
 
 [OctoFarm](https://farm.print.3d/)
 

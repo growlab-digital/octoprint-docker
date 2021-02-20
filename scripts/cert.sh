@@ -14,12 +14,12 @@ IFS=$'\n\t'
 DOMAIN_NAME=$1
 
 openssl req \
--newkey rsa:2048 \
+-newkey rsa:4096 \
 -x509 \
 -nodes \
--keyout "../certs/$DOMAIN_NAME.key" \
+-keyout "./certs/$DOMAIN_NAME.key" \
 -new \
--out "../certs/$DOMAIN_NAME.crt" \
+-out "./certs/$DOMAIN_NAME.crt" \
 -subj "/CN=*.$DOMAIN_NAME" \
 -reqexts SAN \
 -extensions SAN \
@@ -28,4 +28,4 @@ openssl req \
 -sha256 \
 -days 3650
 
-cat "../certs/$DOMAIN_NAME.crt" "../certs/$DOMAIN_NAME.key" > "../certs/$DOMAIN_NAME.pem"
+cat "./certs/$DOMAIN_NAME.crt" "./certs/$DOMAIN_NAME.key" > "./certs/$DOMAIN_NAME.pem"
