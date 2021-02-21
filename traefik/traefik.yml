@@ -36,4 +36,6 @@ accessLog:
 ping: {}
 
 metrics:
-  prometheus: {}
+  prometheus:
+    addEntryPointsLabels: true
+    addServicesLabels: true
